@@ -5,5 +5,6 @@
 void logger();
 
 //scarica la coda di messaggi e la stampa su stdout
-void polling_receive(); 
+int polling_receive();
+ 
 #endif
