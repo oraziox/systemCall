@@ -11,15 +11,35 @@
 #include "../include/types.h"
 
 #define MSGKEY   90		/* chiave per la coda */
+//#define MSGTYPE  1		/* tipo per il messaggio da ricevere */
+
+
 
 int msgid;		/* identificatore della coda */
 
+void exit_fnc(){
+	//DEBUG
+	int mask = 0666;
+	msgid = msgget(MSGKEY, mask);
+	msgctl(msgid, IPC_RMID, NULL);
+	exit(1);
+}
+
 //wrapper del processo logger
 void logger(){
-		
+	
+	int mask = 0666;
+	msgid = msgget(MSGKEY, mask);
+	msgctl(msgid, IPC_RMID, NULL);
+	
+	signal(SIGALRM, exit_fnc);
+	
+	//debug!!
+
+	
 	/*
 		puntatore alla struttura che rappresenta il messaggio.
-		Il messaggio è definito nel file types.h
+		Il messaggio è definito nel file def.h
 	*/
 	struct Message *m;
 
@@ -46,16 +66,19 @@ void logger(){
 	/*
 		Il processo si mette in attesa per leggere dalla coda
 	*/
+	alarm(120);
 	while(quit != 1) {
 		//polling di un secondo
-		sleep(1);
+		sleep(10);
 		quit = polling_receive(msgid, m, msg_size);
-	}	
+	}
+	
 	exit(1);
 };
 
 //scarica la coda di messaggi e la stampa su stdout
 int polling_receive(int msgid, struct Message *m, const unsigned msg_size){
+	printf("Sono nel receive\n");
 	/*
 			la system call msgrcv riceve i messaggi dalla coda msgid e li
 			memorizza nel buffer m.
@@ -68,13 +91,18 @@ int polling_receive(int msgid, struct Message *m, const unsigned msg_size){
 			se non ci sono messaggi nella coda.
 			Vedere man msgrcv.
 		*/
-		
 		while(msgrcv(msgid, m, msg_size, 0, IPC_NOWAIT) != -1) {
 			write(1, m->text, msg_size);
 			write(1, "\n", 1);
 			if(m->mtype == 1){
-				msgctl(msgid, IPC_RMID, NULL);			
+				//for debugging
+				msgctl(msgid, IPC_RMID, NULL);
+				printf("Ricevuto messaggio finale!\n");				
 				return 1;
 			}
 		}
 } 
+
+int main(int argc, char *argv[]) {
+	logger();
+}
