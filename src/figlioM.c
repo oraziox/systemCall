@@ -1,3 +1,4 @@
+//#include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <sys/sem.h>
@@ -17,6 +18,22 @@
 #define SHMKEYS2 8888
 
 #define SEMKEY 14
+
+
+
+
+//						DEBUG
+
+struct Test {
+	int id;
+	int sid;
+};
+
+//test per mem condivisa da signal
+void signalTry();
+
+
+
 
 // 						EXTRA
 
@@ -46,6 +63,59 @@ struct Status *st; 	//puntatore allo status in memoria
 
 pid_t pid1, pid2;		//pid per nipoti
 int semid;					//id del semaforo
+
+
+struct Test *t;
+
+
+
+int main(){
+	
+	/* Testing Shared Memory
+	
+	size=sizeof(struct Test);
+
+	shmid = shmget(SHMKEYS1, 2*size, IPC_CREAT|0666);
+	shm=shmat(shmid, NULL, 0);
+
+	t = (struct Test *)shm + (2*size-size);
+	t->id = 451;
+	t->sid = 993;
+	signalTry();
+		
+	shmdt(shm);
+	printf("Detached\n");
+	*/
+	
+	/* Testing Semaphore */
+	
+	
+	struct sembuf* sops = (struct sembuf *) malloc(sizeof(struct sembuf));
+	if ((semid = semget(SEMKEY, 2,IPC_CREAT|IPC_EXCL|0666)) == -1) {
+		perror ("semget");
+		exit (1);
+	}
+	
+	printf("Creato Semaforo\n");
+	
+	//setta il semaforo a 1 (mutex)
+	sops->sem_num = 0;
+	sops->sem_op = 1;
+	sops->sem_flg = 0;
+	
+	semop(semid, sops, 1);
+	printf("Settato semaforo a 1\n");
+	
+	//Rimozione semaforo
+	int v;
+	v = semctl(semid,0, GETVAL);
+	printf("Il semaforo vale: %i\n", v);
+	semctl(semid, 0, IPC_RMID);
+	free((struct sembuf*)sops);	
+	printf("Distrutto semaforo\n");	
+	
+	return 0;
+}
 
 
 //wrapper del processo figlio, riceve in input la size del buffer s1
@@ -190,4 +260,8 @@ int countCifre(int i){
 		i=i/10;
 	}
 	return c;
+}
+
+void signalTry(){
+	printf("%i\n", t->id);
 }
