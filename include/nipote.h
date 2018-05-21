@@ -2,24 +2,25 @@
 #define NIPOTE_H
 
 //wrapper del processo nipote
-void nipote();
+// id shared memory s1 - id shared memory s2 - id del nipote (1 o 2) - id della coda di messaggi
+void nipote(int shmid1, int shmid2, int nstrings, int x, int msgid);
 
 //legge la stringa dal segmento S1
-void load_string();
+struct Spek load_string(int mystring, void * addr);
 
 //blocca accesso esclusivo regione critica
-void lock();
+int lock();
 
 //sblocca accesso esclusivo regione critica
-void unlock();
+int unlock();
 
 //trova la chiave
-void find_key();
+unsigned find_key(char * plain_text, char * encoded_text);
 
 //deposita il messaggio "chiave trovate/secondi" nella coda di messaggi del processo logger
-void send_timeelapsed();
+void send_timeelapsed(char * string, int coda);
 
 //salva la chiave nel segmento S2
-void save_key();
+void save_key(int mystring, int shmid2, unsigned key);
 
 #endif
