@@ -6,7 +6,7 @@
 #include <stdio.h>		//perror, printf, sprintf
 #include <wait.h>			//SIGUSR1, signal
 #include <unistd.h>		//fork, pause, write
-#include <string.h>		//strcpy
+//#include <string.h>		//strcpy
 
 #include "../include/figlio.h"
 #include "../include/types.h"
@@ -23,7 +23,8 @@
 //dato un intero ne calcola le cifre
 int countCifre(int i);
 
-
+//Copia una stringa da src a dest
+void copiaStr(char *dest, const char *src);
 
 
 //						CONSEGNA
@@ -145,10 +146,15 @@ void figlio(int s1Size){
 
 //signal handler
 void status_updated(int currentSignal){
-	int ts= sizeof(char)*(46+countCifre(st->grandson)+countCifre(st->id_string));
-	char c[ts];
-	sprintf(c, "Il nipote %i sta analizzando la %i-esima stringa.\n", t->id, t->sid);
-	write(1, c, ts);
+	write(1, "Il nipote ", 10);
+	int cif = countCifre(t->id);
+	char c[cif];
+	write(1, intToChar(t->id, cif, c), cif);
+	write(1, " sta analizzando la ", 20);
+	cif = countCifre(t->sid);
+	char d[cif];
+	write(1, intToChar(t->id, cif, d), cif);
+	write(1, "-esima stringa.\n", 16);
 }
 
 void send_terminate(){
@@ -173,7 +179,7 @@ void send_terminate(){
 	const unsigned msg_size = sizeof(struct Message) - sizeof(long);
 	/* creazione del messaggio da inviare */
 	m->mtype = 1;
-	strcpy(m->text, "ricerca conclusa");
+	copiaStr(m->text, "ricerca conclusa");
 	//Mando il messaggio
 	if(msgsnd(msgid, m, sizeof(struct Message) - sizeof(m->mtype), 0) == -1) {
 			perror("msgsnd");
@@ -191,3 +197,9 @@ int countCifre(int i){
 	}
 	return c;
 }
+
+void copiaStr(char *dest, const char *src){
+   char *save = dest;
+   while(*dest++ = *src++);
+}
+
