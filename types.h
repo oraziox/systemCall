@@ -12,3 +12,14 @@ struct Shmem{
 	int shmid;	//id memoria condivisa
 	void* addr; 	//spazio indirizzamento
 };
+
+struct sembuf{
+	ushort	sem_num;
+	short	sem_op;
+	short	sem_flg;
+}
+
+struct Spek{ 
+	char * plain_text[256];
+	char * encoded_text[256];
+}	
